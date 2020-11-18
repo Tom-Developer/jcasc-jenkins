@@ -11,24 +11,37 @@ ENV         BUILD_PLATFORM=$BUILDPLATFORM
 # jenkins options
 ENV         JAVA_OPTS="-Duser.timezone=America/Montreal"
 ENV         JENKINS_OPTS --sessionTimeout=360
+ENV         JAVA_OPTS                                          \
+            -Djenkins.install.runSetupWizard=false             \
+            -Dcasc.jenkins.config=/usr/share/jenkins/ref/jcasc/jenkins-azure-2.0.yaml
 
-WORKDIR		/var/jenkins_home
+WORKDIR		/usr/share/jenkins/ref
 
 USER        root
-	
-# install useful apps and infrastructure for smee-client and smee-client
-RUN         apt-get update                                          &&\
-            apt-get install -y apt-utils                            &&\
-            apt-get install -y vim less                             &&\
-            curl -sL https://deb.nodesource.com/setup_10.x | bash - &&\
-            apt-get install -y nodejs                               &&\
-            nodejs -v                                               &&\
-            npm -v                                                  &&\
-            npm install --global smee-client                        &&\
-            smee -v
 
-# allow this port number to connect to Jenkins in this container
-EXPOSE      8081
+# install default plugins
+COPY        app/jenkins-jcasc-plugins.txt plugins.txt
+RUN         jenkins-plugin-cli -f plugins.txt
+
+RUN         mkdir -p jcasc
+COPY        app/jcasc ./jcasc
+
+# install useful apps and infrastructure for smee-client and smee-client
+#RUN         apt-get update                                          &&\
+#            apt-get install -y apt-utils                            &&\
+#            apt-get install -y vim less                             &&\
+#            curl -sL https://deb.nodesource.com/setup_10.x | bash - &&\
+#            apt-get install -y nodejs                               &&\
+#            nodejs -v                                               &&\
+#            npm -v                                                  &&\
+#            npm install --global smee-client                        &&\
+#            smee -v
+
+
+# Jenkins jetty server listens on this port. Allow outside connections
+EXPOSE      8080
+
+WORKDIR		/var/jenkins_home
 
 USER        jenkins
 ENTRYPOINT  ["/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
