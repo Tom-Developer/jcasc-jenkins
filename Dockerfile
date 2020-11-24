@@ -6,8 +6,9 @@ USER        root
 
 # adjust time to our time zone
 RUN         rm /etc/timezone                                            &&\
+            echo "America/Toronto" > /etc/timezone                     &&\
             rm /etc/localtime                                           &&\
-            ln -s /usr/share/zoneinfo/America/Montreal /etc/localtime   &&\
+            ln -s /usr/share/zoneinfo/America/Toronto /etc/localtime   &&\
             /bin/bash -c 'echo -e "LANG=\"C\"\nLC_CTYPE=\"C\"\nLC_TIME=\"C\"" >> /etc/environment'
 
 # install default plugins
@@ -47,18 +48,21 @@ ENV         BUILD_VERSION=${BUILD_VER}
 ENV         BUILD_PLATFORM=$BUILDPLATFORM
 
 # java + jenkins options
-ENV         JAVA_OPTS="-Duser.timezone=America/Montreal" \
+ENV         JAVA_OPTS="-Duser.timezone=America/Toronto \
+            -Dorg.apache.commons.jelly.tags.fmt.timeZone=America/Toronto \
             -Djenkins.install.runSetupWizard=false \
-            -Dcasc.jenkins.config=/var/jenkins_home/jcasc-config/jenkins-azure-2.0.yaml
-#            -Djava.util.logging.SimpleFormatter.format="[%1$Tf] %4$s: %2$s - %5$s %6$s%n" 
-
+            -Dcasc.jenkins.config=/var/jenkins_home/jcasc-config/jenkins-azure-2.0.yaml"
+#            -Djava.util.logging.config.file=/var/jenkins_home/logging.properties"
 ENV         JENKINS_OPTS --sessionTimeout=360
+ENV         JENKINS_JAVA_OPTIONS="-Duser.timezone=America/Toronto \
+            -Dorg.apache.commons.jelly.tags.fmt.timeZone=America/Toronto"
 
 # copy JCasC configuration file(s)
 COPY       app/jcasc-config  ./jcasc-config
 
 # copy sample pipeline job(s) and groovy startup scripts
 COPY        app/jobs                        ./jobs
+COPY        app/logging.properties          ./logging.properties
 COPY        app/bash-config/.bashrc         ./.bashrc
 COPY        app/bash-config/.bash_aliases   ./.bash_aliases
 COPY        app/groovy/*.groovy             ./init.groovy.d/
