@@ -31,16 +31,17 @@ jenkins:
       allowsSignup: false
       enableCaptcha: false
       users:
-      - id: "admin"
-        name: "admin"
-        password: "admin"
+#      - id: "admin"
+      - id: ${JENKINS_ADMIN_ID:-admin}
+        name: ${JENKINS_ADMIN_ID:-admin}
+        password: ${JENKINS_ADMIN_PASS:-admin}
         properties:
         - "apiToken"
 #        - "myView"  #if left like this throws exception. needs extra data
         - preferredProvider:
             providerId: "default"
         - timezone: 
-            timeZoneName: "America/Montreal"
+            timeZoneName: "America/Toronto"
         - mailer:
             emailAddress: "admin@nowhere.cm"
   slaveAgentPort: 50000

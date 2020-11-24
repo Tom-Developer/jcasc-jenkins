@@ -42,7 +42,7 @@ FROM        default AS jcasc-jenkins
 
 # build info
 LABEL       maintainer="tom p."
-ARG         BUILD_VER=jcasc-0.1
+ARG         BUILD_VER=azure-2.0
 ARG         BUILDPLATFORM
 ENV         BUILD_VERSION=${BUILD_VER}
 ENV         BUILD_PLATFORM=$BUILDPLATFORM
@@ -52,17 +52,16 @@ ENV         JAVA_OPTS="-Duser.timezone=America/Toronto \
             -Dorg.apache.commons.jelly.tags.fmt.timeZone=America/Toronto \
             -Djenkins.install.runSetupWizard=false \
             -Dcasc.jenkins.config=/var/jenkins_home/jcasc-config/jenkins-azure-2.0.yaml"
-#            -Djava.util.logging.config.file=/var/jenkins_home/logging.properties"
+
 ENV         JENKINS_OPTS --sessionTimeout=360
 ENV         JENKINS_JAVA_OPTIONS="-Duser.timezone=America/Toronto \
             -Dorg.apache.commons.jelly.tags.fmt.timeZone=America/Toronto"
 
 # copy JCasC configuration file(s)
-COPY       app/jcasc-config  ./jcasc-config
+COPY        app/jcasc-config  ./jcasc-config
 
 # copy sample pipeline job(s) and groovy startup scripts
 COPY        app/jobs                        ./jobs
-COPY        app/logging.properties          ./logging.properties
 COPY        app/bash-config/.bashrc         ./.bashrc
 COPY        app/bash-config/.bash_aliases   ./.bash_aliases
 COPY        app/groovy/*.groovy             ./init.groovy.d/
@@ -70,6 +69,7 @@ COPY        app/groovy/*.groovy             ./init.groovy.d/
 # Jenkins jetty server listens on this port. Allow outside connections
 EXPOSE      8080
 
+# start jenkins with PID=1
 WORKDIR     /var/jenkins_home
 USER        jenkins
 ENTRYPOINT  ["/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
